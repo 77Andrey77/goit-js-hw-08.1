@@ -39,12 +39,12 @@ galleruEL.addEventListener('click', onOpenModal);
 // open modal
 function onOpenModal(evt) {
   //  even.preventDefault(); 
-  if (!evt.target.classList.contains('gallery__image')) {
-    return;
-  };
-  // if (even.target.nodeName !== 'IMG') {
-  //       return;
+  // if (!evt.target.classList.contains('gallery__image')) {
+  //   return;
   // };
+  if (evt.target.nodeName !== 'IMG') {
+        return;
+  };
   
 
   lightboxEl.classList.add('is-open');
@@ -54,7 +54,9 @@ function onOpenModal(evt) {
 
 lightboxButtonEl.addEventListener('click', onCloseModal);
 lightboxEl.addEventListener('click', onCloseModalOverlay);
-window.addEventListener('keydown', onCloseModalESC);
+  window.addEventListener('keydown', onCloseModalESC);
+  window.addEventListener('keydown', onClickSlider);
+
 };
 
 
@@ -90,5 +92,30 @@ function onCloseModalESC(evt) {
     return;
   }
   onCloseModal();
+};
 
-}
+
+// разобрать
+function onClickSlider(evt) {
+  // console.log(evt.key);
+  let imgIndex = galleryItems.findIndex(
+    image => image.original === lightboxImageEl.src ,
+  );
+
+  if (evt.key === 'ArrowLeft') {
+    if (imgIndex === 0) {
+      imgIndex += galleryItems.length;
+    }
+    imgIndex -= 1;
+  }
+  else if (evt.key === 'ArrowRight') {
+    if (imgIndex === galleryItems.length - 1) {
+      imgIndex = -1;
+    }
+    imgIndex += 1;
+  };
+
+  lightboxImageEl.src = galleryItems[imgIndex].original;
+  lightboxImageEl.alt = galleryItems[imgIndex].description;
+
+};
