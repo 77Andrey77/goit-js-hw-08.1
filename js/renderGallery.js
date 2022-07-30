@@ -31,6 +31,28 @@ const createGalerry = galleryItems.map(createItem);
 
 // распыляем карточки в разметку
 galleruEL.append(...createGalerry);
+//////////////////////////////////////////////////////////////////////////
+
+// ленивая загрузка изображений.
+
+// if ('loading' in HTMLImageElement.prototype) {
+//   console.log('поддерживает линивки');
+//   const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+
+//   lazyImages.forEach(img => {
+//     img.src = img.dataset.src;
+//   })
+// } else {
+//   console.log('ne поддерживает линивки');
+//   const script = document.createElement('script');
+//   script.src = "https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js";
+//   script.crossOrigin = "anonymous";
+//   script.referrerPolicy = "no-referrer";
+
+//   document.body.appendChild(script);
+// };
+
+
 
 //////////////////////////////////////////////////////////////////////////
 
