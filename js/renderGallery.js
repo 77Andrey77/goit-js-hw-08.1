@@ -15,8 +15,8 @@ const createItem = (option) =>
   >
     <img
     loading="lazy"
-      class="gallery__image"
-      src="${option.preview}"
+      class="gallery__image lazyload"
+      data-src="${option.preview}"
       data-source="${option.original}"
       alt="${option.description}"
     />
@@ -27,6 +27,26 @@ const createItem = (option) =>
 const createGalerry = galleryItems.map(createItem).join('');
 
 galleryEl.innerHTML = createGalerry;
+///////////////////////
+
+if ('loading' in HTMLImageElement.prototype) {
+
+  console.log('поддерживает линивки');
+  const lazyLoading = document.querySelectorAll('img[loading="lazy"]');
+  lazyLoading.forEach(img => { img.src = img.dataset.src });
+  
+} else {
+
+    console.log('ne поддерживает линивки');
+  const script = document.createElement('script');
+  script.src = "https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js";
+  script.crossOrigin = "anonymous";
+  script.referrerPolicy = "no-referrer";
+
+  document.body.appendChild(script);
+}
+
+
 
 /////////////////////
 //делегирование событий
@@ -48,8 +68,9 @@ function onOpenModal(e) {
   imageEl.alt = e.target.alt;
   
   closeBtnEl.addEventListener('click', onCloseModal, { once: true });
-  modalEl.addEventListener('click', onCloseModalOverlay, { once: true });
-  window.addEventListener('keydown', onCloseModalESC, { once: true });
+  modalEl.addEventListener('click', onCloseModalOverlay);
+  window.addEventListener('keydown', onCloseModalESC);
+  
   window.addEventListener('keydown', onScrollImg);
 };
 
@@ -58,14 +79,18 @@ function onCloseModal() {
   modalEl.classList.remove('is-open');
   imageEl.src = '';
   imageEl.alt = '';
+
+  modalEl.removeEventListener('click', onCloseModalOverlay);
+  window.removeEventListener('keydown', onCloseModalESC);
+  window.removeEventListener('keydown', onScrollImg);
 };
 
 // закрытие модалки по overlay
 function onCloseModalOverlay(e) {
-  if (!e.target.classList.contains('lightbox__overlay')) {
-    return;
+  if (e.target.classList.contains('lightbox__overlay')) {
+     onCloseModal();
+
   }
-  onCloseModal();
 };
 
 // закрытие модалки по Escape
