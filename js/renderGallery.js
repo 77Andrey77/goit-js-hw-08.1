@@ -1,143 +1,97 @@
 import galleryItems from '../gallery-items.js';
 
-const galleruEL = document.querySelector('.js-gallery');
-const lightboxEl = document.querySelector('.js-lightbox');
-const lightboxImageEl = document.querySelector('.lightbox__image');
-const lightboxButtonEl = document.querySelector('.lightbox__button');
-// const lightboxOverlayEl = document.querySelector('.lightbox__overlay');
+const galleryEl = document.querySelector('.js-gallery');
+const modalEl = document.querySelector('.js-lightbox');
+// const overlayEl = document.querySelector('.lightbox__overlay');
+const imageEl = document.querySelector('.lightbox__image');
+const closeBtnEl = document.querySelector('.lightbox__button');
 
-// одна карточка
-const createItem = (option) => {
-  const liEl = document.createElement('li');
-  liEl.classList.add('gallery__item');
+//разметка для одной картинки
+const createItem = (option) =>
+  `<li class="gallery__item">
+  <a
+    class="gallery__link"
+    href="${option.original}"
+  >
+    <img
+    loading="lazy"
+      class="gallery__image"
+      src="${option.preview}"
+      data-source="${option.original}"
+      alt="${option.description}"
+    />
+  </a>
+</li>`;
 
-  const linkEl = document.createElement('a');
-  liEl.appendChild(linkEl);
-  linkEl.classList.add('gallery__link');
-  // linkEl.href = option.original;
+//делаем галерею
+const createGalerry = galleryItems.map(createItem).join('');
 
-  const imgEL = document.createElement('img');
-  linkEl.appendChild(imgEL);
-  imgEL.classList.add('gallery__image');
-  imgEL.loading = 'lazy';
-  imgEL.src = option.preview;
-  imgEL.alt = option.description;
-  imgEL.dataset.source = option.original;
+galleryEl.innerHTML = createGalerry;
 
-  return liEl;
-};
-// масив карточек
-const createGalerry = galleryItems.map(createItem);
+/////////////////////
+//делегирование событий
 
-// распыляем карточки в разметку
-galleruEL.append(...createGalerry);
-//////////////////////////////////////////////////////////////////////////
+galleryEl.addEventListener('click', onOpenModal);
 
-// ленивая загрузка изображений.
+function onOpenModal(e) {
+  e.preventDefault();
 
-// if ('loading' in HTMLImageElement.prototype) {
-//   console.log('поддерживает линивки');
-//   const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-
-//   lazyImages.forEach(img => {
-//     img.src = img.dataset.src;
-//   })
-// } else {
-//   console.log('ne поддерживает линивки');
-//   const script = document.createElement('script');
-//   script.src = "https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js";
-//   script.crossOrigin = "anonymous";
-//   script.referrerPolicy = "no-referrer";
-
-//   document.body.appendChild(script);
-// };
-
-
-
-//////////////////////////////////////////////////////////////////////////
-
-galleruEL.addEventListener('click', onOpenModal);
-
-// open modal
-function onOpenModal(evt) {
-  //  even.preventDefault(); 
-  // if (!evt.target.classList.contains('gallery__image')) {
+  if (e.target.nodeName !=='IMG') {
+    return;
+  };
+  //  if (!e.target.classList.contains('gallery__image')) {
   //   return;
   // };
-  if (evt.target.nodeName !== 'IMG') {
-        return;
-  };
+
+  modalEl.classList.add('is-open');
+  imageEl.src = e.target.dataset.source;
+  imageEl.alt = e.target.alt;
   
-
-  lightboxEl.classList.add('is-open');
-  
-  lightboxImageEl.src = evt.target.dataset.source;
-  lightboxImageEl.alt = evt.target.alt;
-
-lightboxButtonEl.addEventListener('click', onCloseModal);
-lightboxEl.addEventListener('click', onCloseModalOverlay);
-  window.addEventListener('keydown', onCloseModalESC);
-  window.addEventListener('keydown', onClickSlider);
-
+  closeBtnEl.addEventListener('click', onCloseModal, { once: true });
+  modalEl.addEventListener('click', onCloseModalOverlay, { once: true });
+  window.addEventListener('keydown', onCloseModalESC, { once: true });
+  window.addEventListener('keydown', onScrollImg);
 };
 
-
-
-//close modal///////////////////////////////////////////////////
-
+//закрытие модалки
 function onCloseModal() {
-  lightboxEl.classList.remove('is-open');
-  lightboxImageEl.src = '';
-  lightboxImageEl.alt = '';
-
-lightboxButtonEl.removeEventListener('click', onCloseModal);
-lightboxEl.removeEventListener('click', onCloseModalOverlay);
-window.removeEventListener('keydown', onCloseModalESC);
+  modalEl.classList.remove('is-open');
+  imageEl.src = '';
+  imageEl.alt = '';
 };
 
-//close modal by overlay////////////////////////////////////////
-
-function onCloseModalOverlay(evt) {
-  if (!evt.target.classList.contains('lightbox__overlay')) {
-    return;
-  };
-
-  onCloseModal();
-};
-
-
-//close modal by Escape//////////////////////////////////////////
-
-function onCloseModalESC(evt) {
-  // console.log(evt.key);
-  if (evt.key !== 'Escape') {
+// закрытие модалки по overlay
+function onCloseModalOverlay(e) {
+  if (!e.target.classList.contains('lightbox__overlay')) {
     return;
   }
   onCloseModal();
 };
 
+// закрытие модалки по Escape
+function onCloseModalESC(e) {
+  if (e.key !== 'Escape') {
+    return;
+  }
+  onCloseModal();
+};
 
-// разобрать
-function onClickSlider(evt) {
-  // console.log(evt.key);
-  let imgIndex = galleryItems.findIndex(
-    image => image.original === lightboxImageEl.src ,
-  );
+function onScrollImg(e) {
+  let imgIndex = galleryItems.findIndex(img => img.original === imageEl.src);
 
-  if (evt.key === 'ArrowLeft') {
+  if (e.key === 'ArrowLeft') {
     if (imgIndex === 0) {
-      imgIndex += galleryItems.length;
+      imgIndex = galleryItems.length-1;
+    } else {
+      imgIndex -= 1;
     }
-    imgIndex -= 1;
-  }
-  else if (evt.key === 'ArrowRight') {
+  } else if (e.key === 'ArrowRight') {
     if (imgIndex === galleryItems.length - 1) {
-      imgIndex = -1;
+      imgIndex = 0;
+    } else {
+      imgIndex += 1;
     }
-    imgIndex += 1;
-  };
-
-  lightboxImageEl.src = galleryItems[imgIndex].original;
-  lightboxImageEl.alt = galleryItems[imgIndex].description;
-
+  }
+  imageEl.src = galleryItems[imgIndex].original;
+  imageEl.alt = galleryItems[imgIndex].description;
 };
